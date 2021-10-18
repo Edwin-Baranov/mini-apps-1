@@ -2,13 +2,19 @@ function GameState(value) {
   this.value = value;
 }
 
+/**
+ * All states needed to represent players / board slots / and win states
+ */
 const state = {
   X: new GameState('X'),
   O: new GameState('O'),
-  Tie: new GameState('Tie')
-  Empty: new GameState(''),
+  Tie: new GameState('Tie'),
+  Empty: new GameState('')
 }
 
+/**
+ * Tic Tac Toe game object constructor
+ */
 function Game() {
   this.winner = state.Empty;
 
@@ -23,7 +29,7 @@ function Game() {
 }
 
 /**
- * Tic Tac Toe game
+ * The current Tic Tac Toe game being played
  */
 let currentGame = new Game();
 
@@ -31,24 +37,26 @@ let currentGame = new Game();
  * Changes the board slot state with the provided newState if slot is empty
  * @param {number} colum The colum of the board
  * @param {number} row The row of the board
- * @param {GameState} newState The state to be applied to board slot
- * @param {function} callback Callback that will be called with set state value
+ * @param {function} callback Callback that will be called with set state's value
  */
-let setBoardSlot = (colum, row, newState, callback) => {
-  if (newState instanceof GameState) {
-    if (board[row][colum] === state.Empty) {
-      board[row][colum] = newState;
-      movesMade++;
-      detectEndConditions(colum, row, newState, swapPlayer);
-      callback(null, newState.value);
-    } else {
-      callback(new Error('Taken Slot'));
-    }
+let setBoardSlot = (colum, row, callback) => {
+  if (!callback) { callback = () => {}; }
+
+  if (currentGame.board[row][colum] === state.Empty) {
+    currentGame.board[row][colum] = currentGame.playerTurn;
+    currentGame.movesMade++;
+
+    detectEndConditions(colum, row, currentGame.playerTurn, swapPlayer, () => { console.log('WE HAVE A WINNER') });
+
+    callback(null, currentGame.playerTurn.value);
   } else {
-    callback(new Error('newState is not a valid GameState'))
+    callback(new Error('Taken Slot'));
   }
 }
 
+/**
+ * Function that swaps the state of the current player
+ */
 let swapPlayer = () => {
   if (currentGame.playerTurn === state.X) {
     currentGame.playerTurn = state.O;
@@ -61,49 +69,80 @@ let swapPlayer = () => {
   }
 }
 
+/**
+ * Function that creates a new game
+ */
 let resetGame = () => {
   currentGame = new Game();
 }
 
-let detectEndConditions = (colum, row, checkState, callback) => {
+/**
+ *
+ * @param {number} colum The colum number of the board
+ * @param {number} row The row number of the board
+ * @param {GameState} checkState The type of state to check for on the board
+ * @param {function} next Callback that is called when no game ending conditions are met
+ * @param {function} end Callback that is called when a game ending condition is met
+ */
+let detectEndConditions = (colum, row, checkState, next, end) => {
+  if (!next) { next = () => { }; }
+  if (!end) { end = () => { }; }
+
   //check horizontal
-  if (currentGame.board[row].every((columState) => {columState === checkState})) {
+  if (currentGame.board[row].every((columState) => { return columState === checkState })) {
     currentGame.winner = checkState;
-    callback();
+    end();
     return;
   }
 
   //check vertical
-  if (currentGame.board.every((rowStates) => {rowStates[colum] === checkState})) {
+  if (currentGame.board.every((rowStates) => { return rowStates[colum] === checkState })) {
     currentGame.winner = checkState;
-    callback();
+    end();
     return;
   }
-  //check diagonal if applicable
-  if ((colum === 0 && row === 0) || (colum === 1 && row === 1) || (colum === 2 && row === 2) {
-    //check diagonal right
+
+  //check diagonal right
+  if ((colum === 0 && row === 0) || (colum === 1 && row === 1) || (colum === 2 && row === 2)) {
+    let check = true;
     for (let i = 0; i < currentGame.board.length; i++) {
       if (currentGame.board[i][i] !== checkState) {
-        callback();
-        return;
+        check = false;
+        break;
       }
     }
-    //check diagonal left
+
+    if (check) {
+      currentGame.winner = checkState;
+      end();
+      return;
+    }
+  }
+
+  //check diagonal left
+  if ((colum === 2 && row === 0) || (colum === 1 && row === 1) || (colum === 0 && row === 2)) {
+    let check = true;
     for (let i = 0; i < currentGame.board.length; i++) {
-      if (currentGame.board[i][currentGame.board.length - 1 - i] !== checkState) {
-        callback();
-        return;
+      if (currentGame.board[i][i] !== checkState) {
+        check = false;
+        break;
       }
     }
 
-    currentGame.winner = checkState;
-    callback();
+    if (check) {
+      currentGame.winner = checkState;
+      end();
+      return;
+    }
   }
 
-  if (currentGame.movesMade >= 9 && currentGame.winner === state.Empty) {
+  if (currentGame.movesMade >= 9) {
     currentGame.winner = state.Tie;
-    callback();
+    end();
+    return;
   }
+
+  next();
 }
 
 /** TODO'S
