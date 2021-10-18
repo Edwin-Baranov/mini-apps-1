@@ -1,3 +1,13 @@
+let infoDiv = document.getElementById('info');
+
+let infoPlayerTurn = (input) => {
+  infoDiv.innerHTML = `It is ${input.value} Player's Turn`;
+}
+
+let infoWin = (input) => {
+  infoDiv.innerHTML = input === state.Tie ? 'Game has ended with a tie' : `PLAYER ${input.value} HAS WON!!!`;
+}
+
 function GameState(value) {
   this.value = value;
 }
@@ -31,6 +41,8 @@ function Game() {
     document.getElementsByClassName('boardSlot'),
     (slot) => { slot.innerHTML = state.Empty.value; }
   )
+
+  infoPlayerTurn(this.playerTurn);
 }
 
 /**
@@ -53,7 +65,7 @@ let setBoardSlot = (colum, row, callback) => {
       currentGame.movesMade++;
 
       callback(null, currentGame.playerTurn.value);
-      detectEndConditions(colum, row, currentGame.playerTurn, swapPlayer, () => { console.log('WE HAVE A WINNER') });
+      detectEndConditions(colum, row, currentGame.playerTurn, swapPlayer, infoWin);
     } else {
       callback(new Error('Taken Slot'));
     }
@@ -76,11 +88,13 @@ let slotClickHandler = (colum, row, element) => {
 let swapPlayer = () => {
   if (currentGame.playerTurn === state.X) {
     currentGame.playerTurn = state.O;
+    infoPlayerTurn(currentGame.playerTurn);
     return;
   }
 
   if (currentGame.playerTurn === state.O) {
     currentGame.playerTurn = state.X;
+    infoPlayerTurn(currentGame.playerTurn);
     return;
   }
 }
@@ -107,14 +121,14 @@ let detectEndConditions = (colum, row, checkState, next, end) => {
   //check horizontal
   if (currentGame.board[row].every((columState) => { return columState === checkState })) {
     currentGame.winner = checkState;
-    end();
+    end(currentGame.winner);
     return;
   }
 
   //check vertical
   if (currentGame.board.every((rowStates) => { return rowStates[colum] === checkState })) {
     currentGame.winner = checkState;
-    end();
+    end(currentGame.winner);
     return;
   }
 
@@ -130,14 +144,13 @@ let detectEndConditions = (colum, row, checkState, next, end) => {
 
     if (check) {
       currentGame.winner = checkState;
-      end();
+      end(currentGame.winner);
       return;
     }
   }
 
   //check diagonal left
   if ((colum === 2 && row === 0) || (colum === 1 && row === 1) || (colum === 0 && row === 2)) {
-    console.log('checking diagonal left')
     let check = true;
     for (let i = 0; i < currentGame.board.length; i++) {
       if (currentGame.board[i][currentGame.board.length - 1 - i] !== checkState) {
@@ -148,14 +161,14 @@ let detectEndConditions = (colum, row, checkState, next, end) => {
 
     if (check) {
       currentGame.winner = checkState;
-      end();
+      end(currentGame.winner);
       return;
     }
   }
 
   if (currentGame.movesMade >= 9) {
     currentGame.winner = state.Tie;
-    end();
+    end(currentGame.winner);
     return;
   }
 
