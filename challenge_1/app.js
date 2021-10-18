@@ -1,13 +1,28 @@
+/**
+ * The information div reference from the DOM
+ */
 let infoDiv = document.getElementById('info');
 
+/**
+ * Changes the info div to show curent player's turn
+ * @param {GameState} input GameState that represents current player
+ */
 let infoPlayerTurn = (input) => {
   infoDiv.innerHTML = `It is ${input.value} Player's Turn`;
 }
 
+/**
+ * Changes the info div to show the end state of the game (Win or Tie)
+ * @param {GameState} input GameState that represents the end of the game (X, O, Tie)
+ */
 let infoWin = (input) => {
   infoDiv.innerHTML = input === state.Tie ? 'Game has ended with a tie' : `PLAYER ${input.value} HAS WON!!!`;
 }
 
+/**
+ * State class used for the game of Tic Tac Toe
+ * @param {string} value Internal value of created state
+ */
 function GameState(value) {
   this.value = value;
 }
@@ -74,6 +89,12 @@ let setBoardSlot = (colum, row, callback) => {
   }
 }
 
+/**
+ * Dom button handler for board buttons
+ * @param {number} colum The colum number of Dom button
+ * @param {number} row The row number of the Dom button
+ * @param {object} element The element reference of the Dom button; use this keyword
+ */
 let slotClickHandler = (colum, row, element) => {
   setBoardSlot(colum, row, (err, value) => {
     if (!err) {
@@ -107,7 +128,7 @@ let resetGame = () => {
 }
 
 /**
- *
+ * Checks for any winning conditions at specified colum and row, If found will run next callback, else will run end callback
  * @param {number} colum The colum number of the board
  * @param {number} row The row number of the board
  * @param {GameState} checkState The type of state to check for on the board
@@ -174,17 +195,5 @@ let detectEndConditions = (colum, row, checkState, next, end) => {
 
   next();
 }
-
-let testClick = (colum, row, element) => {
-  console.log(`You clicked colum ${colum} and row ${row} with the element ${element}`)
-}
-
-/** TODO'S
- * ~~make board~~
- * ~~first move always starts with x~~
- * ~~detects a win or tie~~
- * display's appropriate message
- * ~~button resets the game for new round of gameplay~~
- */
 
 console.log('GAME START!!!');
