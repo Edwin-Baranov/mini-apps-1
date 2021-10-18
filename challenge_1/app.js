@@ -6,10 +6,10 @@ function GameState(value) {
  * All states needed to represent players / board slots / and win states
  */
 const state = {
-  X: new GameState('X'),
-  O: new GameState('O'),
-  Tie: new GameState('Tie'),
-  Empty: new GameState('')
+  X: new GameState('[X]'),
+  O: new GameState('[O]'),
+  Tie: new GameState('[Tie]'),
+  Empty: new GameState('[ ]')
 }
 
 /**
@@ -26,6 +26,11 @@ function Game() {
 
   this.playerTurn = state.X;
   this.movesMade = 0;
+
+  [].forEach.call(
+    document.getElementsByClassName('boardSlot'),
+    (slot) => { slot.innerHTML = state.Empty.value; }
+  )
 }
 
 /**
@@ -40,18 +45,29 @@ let currentGame = new Game();
  * @param {function} callback Callback that will be called with set state's value
  */
 let setBoardSlot = (colum, row, callback) => {
-  if (!callback) { callback = () => {}; }
+  if (!callback) { callback = () => { }; }
 
-  if (currentGame.board[row][colum] === state.Empty) {
-    currentGame.board[row][colum] = currentGame.playerTurn;
-    currentGame.movesMade++;
+  if (currentGame.winner === state.Empty) {
+    if (currentGame.board[row][colum] === state.Empty) {
+      currentGame.board[row][colum] = currentGame.playerTurn;
+      currentGame.movesMade++;
 
-    detectEndConditions(colum, row, currentGame.playerTurn, swapPlayer, () => { console.log('WE HAVE A WINNER') });
-
-    callback(null, currentGame.playerTurn.value);
+      callback(null, currentGame.playerTurn.value);
+      detectEndConditions(colum, row, currentGame.playerTurn, swapPlayer, () => { console.log('WE HAVE A WINNER') });
+    } else {
+      callback(new Error('Taken Slot'));
+    }
   } else {
-    callback(new Error('Taken Slot'));
+    callback(new Error('Game has ended'))
   }
+}
+
+let slotClickHandler = (colum, row, element) => {
+  setBoardSlot(colum, row, (err, value) => {
+    if (!err) {
+      element.innerHTML = value;
+    }
+  })
 }
 
 /**
@@ -121,9 +137,10 @@ let detectEndConditions = (colum, row, checkState, next, end) => {
 
   //check diagonal left
   if ((colum === 2 && row === 0) || (colum === 1 && row === 1) || (colum === 0 && row === 2)) {
+    console.log('checking diagonal left')
     let check = true;
     for (let i = 0; i < currentGame.board.length; i++) {
-      if (currentGame.board[i][i] !== checkState) {
+      if (currentGame.board[i][currentGame.board.length - 1 - i] !== checkState) {
         check = false;
         break;
       }
@@ -145,6 +162,10 @@ let detectEndConditions = (colum, row, checkState, next, end) => {
   next();
 }
 
+let testClick = (colum, row, element) => {
+  console.log(`You clicked colum ${colum} and row ${row} with the element ${element}`)
+}
+
 /** TODO'S
  * ~~make board~~
  * ~~first move always starts with x~~
@@ -152,3 +173,5 @@ let detectEndConditions = (colum, row, checkState, next, end) => {
  * display's appropriate message
  * ~~button resets the game for new round of gameplay~~
  */
+
+console.log('GAME START!!!');
