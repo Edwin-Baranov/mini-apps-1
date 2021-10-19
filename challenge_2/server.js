@@ -3,15 +3,18 @@ const app = express();
 const port = 3000
 
 app.use(express.static('client'));
+app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
 app.post('/upload_json', (req, res) => {
-  jsonToCSV(req.body);
-  res.end();
+  console.log(req.body)
+  let parsedReq = JSON.parse(req.body.csvInput);
+  res.send(jsonToCSV(parsedReq));
 })
 
 //Take Json and convert it to csv
 const jsonToCSV = (input) => {
+  console.log('JSON INPUT:', input);
   let result = [];
   let header = ['firstName', 'lastName', 'county', 'city', 'role', 'sales']
 
@@ -23,7 +26,7 @@ const jsonToCSV = (input) => {
   }
 
   recursion(input);
-  console.log(result);
+  return header.join(', ') + '\n' + result.join('\n');
 }
 
 app.listen(port, () => console.log(`Listening on port ${port}.`));
