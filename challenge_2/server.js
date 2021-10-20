@@ -7,14 +7,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
 app.post('/upload_json', (req, res) => {
-  res.send(`<h3>CSV Report Generator</h3>
-
-  <form method="POST" action="/upload_json">
-    <textarea type="text" name="csvInput" rows="10" cols="50" placeholder="Paste your JSON here!"></textarea>
-    <input type="submit" value="Send me!">
-  </form>
-
-  <p style="white-space: pre-wrap">${jsonToCSV(req.body.csvInput)}</p>`);
+  res.send(jsonToCSV(req.body.value));
 })
 
 //Take Json and convert it to csv
